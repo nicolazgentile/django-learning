@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Title: {{ publisher.name }}</h1>
+
+<p><strong>Name:</strong> {{ publisher.name }} </p>
+  <p><strong>Address:</strong> {{ publisher.address }}</p>
+  <p><strong>City:</strong> {{ publisher.city }}</p>
+  <p><strong>State:</strong> {{ publisher.state_province }}</p>
+  <p><strong>Country:</strong> {{ publisher.state_province }}</p>
+
+  <div style="margin-left:20px;margin-top:20px">
+    <h4>Published books</h4>
+    {% for book in book_list %}
+      <a href='{{ book.get_absolute_url }}'>{{ book.title }}</a>
+      <br>
+    {% endfor %}
+  </div>
+{% endblock %}

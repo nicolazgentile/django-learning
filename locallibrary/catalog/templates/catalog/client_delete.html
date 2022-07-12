@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>ID: {{ cliente.identification }}</h1>
+<div class="main">
+    <form method="POST">
+        {% csrf_token %}
+        {{ cliente.first_name }} {{ cliente.last_name }}
+        <br/>
+        <a href="{% url 'clients' %}" type='button' class='btn btn-success pull-right'>Cancelar</a>
+        <input type="submit" class='btn btn-danger pull-right' value="ELIMINAR">
+    </form>
+</div>
+{% endblock %}

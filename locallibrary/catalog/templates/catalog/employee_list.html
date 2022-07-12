@@ -1,0 +1,13 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Employee List</h1>
+<div class="main">
+    {% for employee in employees %}
+      {{ employee.first_name }}, {{ employee.last_name }} - {{ employee.category }}
+        <a href="{% url 'employee-detail' employee.pk %}">Detail</a>
+      <br/>
+    {% endfor %}
+      <a href="{% url 'employee-add' %}" type='button' class='btn btn-success pull-right'>Agregar</a>
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Client List</h1>
+<div class="main">
+    {% for client in dataset %}
+      {{ client.first_name }}, {{ client.last_name }} -
+        <a href="{% url 'client-detail' client.pk %}">{{ client.identification }}</a>
+        <a href="{% url 'client-delete' client.pk %}" type='button' class='btn btn-danger pull-right'>Eliminar</a>
+      <br/>
+    {% endfor %}
+      <a href="{% url 'client-add' %}" type='button' class='btn btn-success pull-right'>Agregar</a>
+</div>
+{% endblock %}
