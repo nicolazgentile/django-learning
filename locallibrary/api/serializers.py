@@ -96,7 +96,6 @@ class GenreBookRelatedSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# Lo mismo pero desde uno de los objetos relacionados:
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:

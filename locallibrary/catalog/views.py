@@ -4,7 +4,7 @@ from .models import Book, Author, BookInstance, Genre, Publisher, Client, Employ
 from .forms import ClientForm
 from django.views import generic
 from datetime import date
-
+import requests
 
 def index(request):
     """View function for home page of site."""
@@ -165,6 +165,10 @@ class EmployeeDetailView(generic.DetailView):
 class EmployeeUpdateView(generic.UpdateView):
     model = Employee
 
-    fields = ['last_name', 'category']
+    fields = ['last_name', 'category', 'user']
+
+    # Para consumir APIs desde acá....posiblemente tira un error porque el puerto de llamada es el mismo que el target
+    # api_response = requests.get('http://localhost:8000/api/genres')
+    # print(api_response)
 
     success_url = f'/catalog/employees/'

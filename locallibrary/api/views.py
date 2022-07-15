@@ -198,11 +198,13 @@ class CategoryList(generics.ListCreateAPIView):
     serializer_class = CategorySerializer
 
 
+# Seteando el atributo "permission_classes" a "DjangoModelPermissions", obtenemos una autenticación basada en
+# sesiones, y una gestión de permisos basadas en los default de django (can_add_ENTIDAD, can_change..., etc
 class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     # authentication_classes = [SessionAuthentication, BasicAuthentication]
-    permission_classes = [DjangoModelPermissions]
+    # permission_classes = [DjangoModelPermissions]
 
     # def get(self, request, format=None):
     #     content = {
@@ -212,8 +214,18 @@ class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
     #     return Response(content)
 
 
+
 # Create your views here.
 class BookInstanceViewSet(viewsets.ModelViewSet):
     queryset = BookInstance.objects.all()
 
     serializer_class = BookInstanceSerializer
+
+
+# @detail_route(methods=['get'])
+# def fetch_report(self, request, *args, **kwargs):
+#     import base64
+#     short_report = open("somePdfFile", 'rb')
+#     report_encoded = base64.b64encode(short_report.read())
+#     return Response({'detail': 'this works',
+#         'report': report_encoded})

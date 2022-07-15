@@ -4,6 +4,9 @@ from django.db import models
 from django.urls import reverse
 import uuid  # Required for unique book instances
 
+from django.contrib.auth import get_user_model
+
+User = get_user_model ()
 
 # Create your models here.
 class Genre(models.Model):
@@ -161,6 +164,7 @@ class Employee(models.Model):
     date_of_birth = models.DateField(null=True, blank=True)
     active = models.BooleanField(default=True)
     category = models.ForeignKey('Category', default=7, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return f'{self.last_name}, {self.first_name} - ({self.category})'
