@@ -5,20 +5,21 @@ import json
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins, generics
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import mixins
-from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
-from rest_framework.views import APIView
-from django.contrib.auth.models import User
+from rest_framework.settings import api_settings
 
 from .serializers import author_serializer_casero, BasicLanguageSerializer, PublisherSerializer, BookRelatedSerializer, \
     GenreBookRelatedSerializer, CategorySerializer
 from .serializers import combine_mult_serializers, GenreSerializer, BookInstanceSerializer, LanguageSerializer
 from catalog.models import BookInstance, Author, Language, Publisher, Genre, Book, Category
+
+from datetime import datetime, timedelta
 
 
 # Inicialmente creamos una vista, y serializamos los datos (para parsearlos a json) manualmente
@@ -204,7 +205,7 @@ class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     # authentication_classes = [SessionAuthentication, BasicAuthentication]
-    # permission_classes = [DjangoModelPermissions]
+    permission_classes = [DjangoModelPermissions]
 
     # def get(self, request, format=None):
     #     content = {
@@ -215,11 +216,63 @@ class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
 
 
 
-# Create your views here.
+
+
+
+# Ahora implementamos los viewsets (mas alto nivel), y seteamos el atributo "permission_classes" a IsAuthenticated
+#  Como además se agregó a las aplicaciones instaladas (en settings) la autenticacion por tokens, vamos a necesitar
+# Una vista que al ingresar nuestro user y pass, nos devuelva un token (se puede hacer directamente, aunque mas
+# rústico con "path('api-token-auth/', obtain_auth_token, name='api_token_auth')", pero no nos pide las credenciales
+# solo tira el error si no las proveemos
 class BookInstanceViewSet(viewsets.ModelViewSet):
     queryset = BookInstance.objects.all()
 
     serializer_class = BookInstanceSerializer
+
+    permission_classes = (IsAuthenticated,)
+
+
+# Ahora si creamos el "end point"/vista para que el usuario pueda obtener un token a partir de su user/pass
+# Para eso heredamos la clase "ObtainAuthToken"
+class UserTokenLoginApiView(ObtainAuthToken):
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data['user']
+            token, created = Token.objects.get_or_create(user=user)
+
+            utc_now = datetime.utcnow()
+            if not created and token.created < (utc_now - timedelta(hours=24)).astimezone():
+                token.delete()
+                token = Token.objects.create(user=user)
+                token.created = datetime.utcnow()
+                token.save()
+
+            #return Response({'token': token.key})
+            response_data = {'user': user.username,
+                            'expires_in': (utc_now.astimezone() - token.created).days,
+                            'token': token.key}
+            return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+        return HttpResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# La clase anterior está muy bien, pero no implementa la caducidad de tokens
+# class ObtainExpiringAuthToken(ObtainAuthToken):
+#     def post(self, request, *args, **kwargs):
+#         serializer = self.serializer_class(data=request.data)
+#         if serializer.is_valid():
+#             token, created = Token.objects.get_or_create(user=serializer.validated_data['user'])
+#
+#             if not created:
+#                 # update the created time of the token to keep it valid
+#                 token.created = datetime.utcnow()
+#                 token.save()
+#
+#             return Response({'token': token.key})
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # @detail_route(methods=['get'])
